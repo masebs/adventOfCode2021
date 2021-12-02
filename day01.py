@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Spyder Editor
+Advent of Code 2021
 
-This is a temporary script file.
+@author marc s schneider @ mailbox org
 """
 
 lines = []
