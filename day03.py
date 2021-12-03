@@ -2,7 +2,7 @@
 """
 Advent of Code 2021
 
-@author marc s schneider @ mailbox org
+@author marc
 """
 
 lines = []
@@ -70,3 +70,6 @@ oxy = filterList(vals, useMostCommon=True)
 co2 = filterList(vals, useMostCommon=False)
 
 print(f"Task 2: The decimal values are oxy = {oxy}, co2 = {co2}, product = {oxy*co2}")
+
+# count lines with grep -cve '^\s*$' -e '^\s*#' day03.py 
+#  (actually 4 less due to multiline comment header)

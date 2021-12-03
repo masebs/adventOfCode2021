@@ -2,7 +2,7 @@
 """
 Advent of Code 2021
 
-@author marc s schneider @ mailbox org
+@author marc
 """
 
 lines = []
