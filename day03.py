@@ -2,7 +2,7 @@
 """
 Advent of Code 2021
 
-@author marc
+@author marc 
 """
 
 lines = []
