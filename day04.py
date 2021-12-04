@@ -57,5 +57,3 @@ res = winNr[-1]*unmarkedSum
 
 print(f"Task 2: Result is {res}")
 
-# count lines with grep -cve '^\s*$' -e '^\s*#' day03.py 
-#  (actually 4 less due to multiline comment header)
