@@ -5,7 +5,6 @@ Advent of Code 2021
 @author marc 
 """
 
-lines = []
 with open("input-day06", 'r') as f:
 # with open("input-day06-test", 'r') as f:
     lines = f.readlines()
