@@ -22,4 +22,4 @@ def run(fish, nrEpochs):
     return sum(f[1] for f in fish)
     
 print(f"Task 1: Result is {run(fish, 80)}")
-print(f"Task 1: Result is {run(fish, 256)}")
+print(f"Task 2: Result is {run(fish, 256)}")
