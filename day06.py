@@ -13,8 +13,8 @@ with open("input-day06", 'r') as f:
 
 def run(fish, nrEpochs):
     for i in range(nrEpochs):
-        spawncount = sum([f[1] for f in fish if f[0] == 0])
-        fish = [(i[0]-1, i[1]) if i[0]-1 >= 0 else (6,i[1]) for i in fish]
+        spawncount = sum(f[1] for f in fish if f[0] == 0)
+        fish = [(f[0]-1, f[1]) if f[0]-1 >= 0 else (6,f[1]) for f in fish]
         if spawncount > 0:
             fish.append((8, spawncount))
         # print(f"epoch {i}: length {len(fish)}")
