@@ -99,10 +99,10 @@ for (pat, out) in zip(patterns, output):
     len235 = [v for v in pat if len(v)==5]
     
     # Create sets containing the single letters for each list from above
-    s1   = set(s for el in len1 for s in el) 
-    s4   = set(s for el in len4 for s in el)
-    s7   = set(s for el in len7 for s in el)
-    s8   = set(s for el in len8 for s in el)
+    s1 = set(s for el in len1 for s in el) 
+    s4 = set(s for el in len4 for s in el)
+    s7 = set(s for el in len7 for s in el)
+    s8 = set(s for el in len8 for s in el)
     s069Union     = set(s for el in len069 for s in el) 
     s235Union     = set(s for el in len235 for s in el)
     s069Intersect = reduce(set.intersection, [set(l) for l in len069])
@@ -113,9 +113,9 @@ for (pat, out) in zip(patterns, output):
     mapping['a']  = s7 - mapping['cf']
     mapping['bd'] = s4 - mapping['cf']
     mapping['eg'] = s8 - (mapping['a'] | mapping['cf'] | mapping['bd'])
-    mapping['c']  = (s069Union - s069Intersect ) & mapping['cf'] 
+    mapping['c']  = (s069Union - s069Intersect) & mapping['cf'] 
     mapping['f']  = mapping['cf'] - mapping['c']
-    mapping['d']  = (s069Union - s069Intersect ) & mapping['bd']
+    mapping['d']  = (s069Union - s069Intersect) & mapping['bd']
     mapping['b']  = mapping['bd'] - mapping['d']
     mapping['g']  = s235Intersect & ({'a', 'b', 'c', 'd', 'e', 'f', 'g'} 
                               - (mapping['a'] | mapping['b'] | mapping['c'] | mapping['d'] | mapping['f'] ) )
