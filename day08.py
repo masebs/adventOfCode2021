@@ -85,10 +85,10 @@ def decode(digit):
 #      note: works only if there actually is a number 3 or 5 contained
 # segment e is the last unidentified
 
-mapping = {}
 totalsum = 0
 
 for (pat, out) in zip(patterns, output):
+    mapping = {}
     
     # Sort the representations of the pattern by their length 
     len1   = [v for v in pat if len(v)==2]
