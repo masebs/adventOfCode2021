@@ -5,6 +5,8 @@ Advent of Code 2021
 @author marc 
 """
 
+from functools import reduce
+
 with open("input-day08", 'r') as f:
 # with open("input-day08-test", 'r') as f:
     lines = f.readlines()
@@ -101,31 +103,31 @@ for (pat, out) in zip(patterns, output):
     s4   = set(s for el in len4 for s in el)
     s7   = set(s for el in len7 for s in el)
     s8   = set(s for el in len8 for s in el)
-    s069 = [set(l) for l in len069] 
-    s235 = [set(l) for l in len235] 
+    s069Union     = set(s for el in len069 for s in el) 
+    s235Union     = set(s for el in len235 for s in el)
+    s069Intersect = reduce(set.intersection, [set(l) for l in len069])
+    s235Intersect = reduce(set.intersection, [set(l) for l in len235])
     
     # Apply the rules (set operations) listed above to obtain the mapping
-    mapping['cf'] = list(s1) 
-    mapping['a']  = list(s7 - set(mapping['cf']))
-    mapping['bd'] = list(s4 - set(mapping['cf']))
-    mapping['eg'] = list(s8 - (set(mapping['a']) | set(mapping['cf']) | set(mapping['bd'])))
-    mapping['c']  = list( ((s069[0] | s069[1] | s069[2]) - (s069[0] & s069[1] & s069[2]) ) & set(mapping['cf']) )
-    mapping['f']  = list(set(mapping['cf']) - set(mapping['c']))
-    mapping['d']  = list( ((s069[0] | s069[1] | s069[2]) - (s069[0] & s069[1] & s069[2]) ) & set(mapping['bd']) )
-    mapping['b']  = list(set(mapping['bd']) - set(mapping['d']))
-    mapping['g']  = list( ( (s235[0] & s235[1] & s235[2]) 
-                           & ({'a', 'b', 'c', 'd', 'e', 'f', 'g'} 
-                              - (set(mapping['a']) | set(mapping['b']) | set(mapping['c']) | set(mapping['d']) | set(mapping['f']) ) )
-                           ))
-    mapping['e']  = list({'a', 'b', 'c', 'd', 'e', 'f', 'g'} 
-                         - (set(mapping['a']) | set(mapping['b']) | set(mapping['c']) | set(mapping['d']) | set(mapping['f']) | set(mapping['g']) ))
+    mapping['cf'] = s1
+    mapping['a']  = s7 - mapping['cf']
+    mapping['bd'] = s4 - mapping['cf']
+    mapping['eg'] = s8 - (mapping['a'] | mapping['cf'] | mapping['bd'])
+    mapping['c']  = (s069Union - s069Intersect ) & mapping['cf'] 
+    mapping['f']  = mapping['cf'] - mapping['c']
+    mapping['d']  = (s069Union - s069Intersect ) & mapping['bd']
+    mapping['b']  = mapping['bd'] - mapping['d']
+    mapping['g']  = s235Intersect & ({'a', 'b', 'c', 'd', 'e', 'f', 'g'} 
+                              - (mapping['a'] | mapping['b'] | mapping['c'] | mapping['d'] | mapping['f'] ) )
+    mapping['e']  = {'a', 'b', 'c', 'd', 'e', 'f', 'g'} \
+                - (mapping['a'] | mapping['b'] | mapping['c'] | mapping['d'] | mapping['f'] | mapping['g'] )
     
     # We need the mapping in the other direction, so invert it
     invmaplist = [(mapping[k], k) for k in mapping.keys()]
     invmap = {}
     for l in invmaplist:
         if len(l[0]) == 1:
-            invmap[l[0][0]] = [l[1]]
+            invmap[list(l[0])[0]] = l[1]
     
     # Use the (inverse) mapping to transfer the representation into standard representation
     number = []
