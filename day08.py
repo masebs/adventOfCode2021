@@ -132,12 +132,8 @@ for (pat, out) in zip(patterns, output):
     # Use the (inverse) mapping to transfer the representation into standard representation
     number = []
     for o in out:
-        # print("o=", o)
-        digit = [] 
-        for c in o:
-            digit.append(invmap[c][0]) # digit is list of segment letters forming the current digit
-        # print("digit:", digit)len4
-        number.append(decode(digit))   # decode digit into a number
+        digit = [invmap[c][0] for c in o] # digit is a list of segment letters forming the current digit
+        number.append(decode(digit))      # decode digit into a number
 
     # print("Number decoded:", number)
     totalsum += number[0]*1000+number[1]*100+number[2]*10+number[3]*1
