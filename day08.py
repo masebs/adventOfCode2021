@@ -16,21 +16,15 @@ patterns = [l[0].split() for l in lines]
 output   = [l[1].split() for l in lines]
 
 ### Part 1 (could be obtained from within Part 2)
-def yieldByLength(length, valuelists):
-    for l in valuelists:
-        for v in l:
-            if len(v) == length:
-                yield v
-                
 # zeros have length 6
-count1 = [v for v in yieldByLength(2, output)] # ones have length 2
+count1 = [v for o in output for v in o if len(v) == 2] # ones have length 2
 # twos have length 5
 # threes have length 5
-count4 = [v for v in yieldByLength(4, output)] # fours have length 4
+count4 = [v for o in output for v in o if len(v) == 4] # fours have length 4
 # fives have length 5
 # sixes have length 6
-count7 = [v for v in yieldByLength(3, output)] # sevens have length 3
-count8 = [v for v in yieldByLength(7, output)] # eights have length 7
+count7 = [v for o in output for v in o if len(v) == 3] # sevens have length 3
+count8 = [v for o in output for v in o if len(v) == 7] # eights have length 7
 # nines have length 6
 
 print(f"Task 1: 1, 4, 7, 8 appear {len(count1)}, {len(count4)}, {len(count7)}, {len(count8)} times, " 
