@@ -49,10 +49,8 @@ for minpt in minpts:
     visited = []
     while len(q) > 0:
         c = q.pop()
-        if c in visited: # don't investigate a point twice
-            continue
-        else:
-            visited.append(c) # visit each point only once
+        if c not in visited: # don't investigate a point twice
+            visited.append(c) 
             # print(" looking at index c=", c)
             idx = []
             if c[0]-1 >= 0:
