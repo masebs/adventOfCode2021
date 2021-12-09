@@ -49,7 +49,7 @@ for minpt in minpts:
     visited = []
     while len(q) > 0:
         c = q.pop()
-        if c in visited:
+        if c in visited: # don't investigate a point twice
             continue
         else:
             visited.append(c) # visit each point only once
@@ -65,8 +65,8 @@ for minpt in minpts:
                 idx.append((c[0], c[1]+1))
             # print(" idx =", idx)
             for i in idx:
-                if hmap[i] > hmap[c] and hmap[i] < 9:  # True = basin point!
-                    if i not in basinpts:
+                if hmap[i] > hmap[c] and hmap[i] < 9:  # c is the known basinpt from the q, c the potential new one
+                    if i not in basinpts: # avoid adding the same point twice
                         # print(" -> adding to q: point at index i=", i)
                         q.append(i)
                         basinpts.append(i)
@@ -76,5 +76,6 @@ for minpt in minpts:
 basinsizes.sort(reverse=True)
 # print(basinsizes)
 result = basinsizes[0] * basinsizes[1] * basinsizes[2]
+
 print(f"Task 2: Product of three largest basin sizes is {result}")
 
