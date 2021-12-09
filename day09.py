@@ -63,7 +63,7 @@ for minpt in minpts:
                 idx.append((c[0], c[1]+1))
             # print(" idx =", idx)
             for i in idx:
-                if hmap[i] > hmap[c] and hmap[i] < 9:  # c is the known basinpt from the q, c the potential new one
+                if hmap[i] > hmap[c] and hmap[i] < 9:  # c is the known basinpt from the q, i the potential new one
                     if i not in basinpts: # avoid adding the same point twice
                         # print(" -> adding to q: point at index i=", i)
                         q.append(i)
