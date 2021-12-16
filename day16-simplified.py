@@ -53,34 +53,6 @@ strval = padstring + strval
 
 versionsum = 0 # result for part 1
 
-def getPacketLength(strval):
-    typeid  = int(strval[3:6], 2)
-    length = 6 # version and type of this packet
-    if typeid == 4: # packet contains a literal
-        overhead = 6
-        for k in range(6, len(strval), 5):
-            packagefollows = int(strval[k], 2)
-            length += 5 
-            if packagefollows == 0:
-                break
-    else:
-        lengthtype = int(strval[6], 2)
-        if lengthtype == 0:
-            overhead = 22
-            totallength = int(strval[7:22], 2)
-            length += 16 + totallength # 1 bit length indicator, 15 length, rest is content
-        else:
-            overhead = 18
-            nrpacks = int(strval[7:18], 2)
-            k = 18
-            length += 12 # overhead for current package: 1 bit length indicator, 11 bit packet count
-            for n in range(nrpacks):
-                sublength, _ = getPacketLength(strval[k:])
-                length += sublength 
-                k += sublength 
-                
-    return length, overhead
-        
 def decodePacket(strval):
     global versionsum
     printIfVerbose(f"Decoding {strval}")
@@ -90,17 +62,19 @@ def decodePacket(strval):
     typeid  = int(strval[3:6], 2)
     printIfVerbose(f" version: {version}")
     printIfVerbose(f" typeid: {typeid}")
+    lengthread = 6
     
     if typeid == 4:
         literal = ''
         for k in range(6, len(strval), 5):
             packagefollows = int(strval[k], 2)
             literal += strval[k+1:k+5]
+            lengthread += 5
             if packagefollows == 0:
                 break
-        literal= int(literal, 2)
+        literal = int(literal, 2)
         printIfVerbose(f" literal: {literal}")
-        return literal
+        return literal, lengthread
     
     else: # we've got an operator
         operands = []
@@ -110,51 +84,43 @@ def decodePacket(strval):
         if lengthtype == 0:
             totallength = int(strval[7:22], 2)
             k = 22
+            lengthread += 16
             while k < 22 + totallength:
-                assert(k < len(strval))
-                printIfVerbose(f" totallength: {totallength}, k: {k}")
-                printIfVerbose(f" looking up {strval[k:]}")
-                length, _ = getPacketLength(strval[k:k+totallength])
-                printIfVerbose(f" length: {length}, subpack: {strval[k:k+length]}")
-                subpack = strval[k:k+length]
-                op = decodePacket(subpack)
-                if op != -1:
-                    operands.append(op)
+                op, length = decodePacket(strval[k:])
+                operands.append(op)
                 k += length
+                lengthread += length
                 
         else:
             nrpacks = int(strval[7:18], 2)
             k = 18
+            lengthread += 12
             for n in range(nrpacks):
-                printIfVerbose(f"get subpacket length for {strval[k:]}, nrpacks: {nrpacks}")
-                length, overhead = getPacketLength(strval[k:])
-                printIfVerbose(f" length: {length}, overhead: {overhead},subpack = strval[{k}:{k+length}], len(strval): {len(strval)}")
-                subpack = strval[k:k+length+overhead]
-                op = decodePacket(subpack)
-                if op != -1:
-                    operands.append(op)
+                op, length = decodePacket(strval[k:])
+                operands.append(op)
                 k += length
+                lengthread += length
                 
         printIfVerbose(f"Operands: {operands}")
         
         if typeid == 0:
-            return sum(operands)
+            return sum(operands), lengthread
         elif typeid == 1:
-            return np.product(operands)
+            return np.product(operands), lengthread
         elif typeid == 2:
-            return np.min(operands)
+            return np.min(operands), lengthread
         elif typeid == 3:
-            return np.max(operands)
+            return np.max(operands), lengthread
         elif typeid == 5:
-            return int(operands[0] > operands[1])
+            return int(operands[0] > operands[1]), lengthread
         elif typeid == 6:
-            return int(operands[0] < operands[1])
+            return int(operands[0] < operands[1]), lengthread
         elif typeid == 7:
-            return int(operands[0] == operands[1])
+            return int(operands[0] == operands[1]), lengthread
         else:    
-            return -1
+            return -1, lengthread
 
-result = decodePacket(strval)
+result, _ = decodePacket(strval)
 
 print(f"\nTask 1: Sum of versions is {versionsum}")
 print(f"Task 2: Result is {result}")
