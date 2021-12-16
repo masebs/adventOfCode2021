@@ -5,22 +5,43 @@ Advent of Code 2021
 @author marc 
 """
 
+import numpy as np
 
+### Test data
+# Part 1
 # hexinp = 'D2FE28'
 # hexinp = '38006F45291200'
 # hexinp = 'EE00D40C823060'
 # hexinp = '8A004A801A8002F478'
-hexinp = '620080001611562C8802118E34'
+# hexinp = '620080001611562C8802118E34'
 # hexinp = 'C0015000016115A2E0802F182340'
 # hexinp = 'A0016C880162017C3686B18A3D4780'
 
-# with open("input-day16", 'r') as f:
-# # with open("input-day16-test", 'r') as f:
-#     hexinp = f.readlines()[0].split()
+# Part 2
+# hexinp = 'C200B40A82'
+# hexinp = '04005AC33890'
+# hexinp = '880086C3E88112'
+# hexinp = 'CE00C43D881120'
+# hexinp = 'D8005AC2A8F0'
+# hexinp = 'F600BC2D8F'
+# hexinp = '9C005AC2F8F0'
+# hexinp = '9C0141080250320F1802104A08'
+
+
+with open("input-day16", 'r') as f:
+# #with open("input-day16-test", 'r') as f:
+    hexinp = f.readlines()[0].split()[0]
+
+def printIfVerbose(s): # for logging
+    global verbose
+    if verbose:
+        print(s)
+
+verbose = False
 
 dezval = int(hexinp, 16)
 binval = bin(dezval)
-strval = str(binval)[2:]
+strval = str(binval)[2:] # the binary string to be processed
 
 requiredlength = len(hexinp)*4 # pad leading zeros in case they are missing
 missingZeros = requiredlength - len(strval)
@@ -30,50 +51,44 @@ while missingZeros:
     missingZeros -= 1
 strval = padstring + strval
 
-versionsum = 0
+versionsum = 0 # result for part 1
 
 def getPacketLength(strval):
-    # print("getPacketLength for", strval)
-    # version = int(strval[:3], 2)
-    # print(" version:", version)
     typeid  = int(strval[3:6], 2)
-    # print(" typeid:", typeid)
-    length = 6
-    if typeid == 4:
+    length = 6 # version and type of this packet
+    if typeid == 4: # packet contains a literal
         overhead = 6
         for k in range(6, len(strval), 5):
             packagefollows = int(strval[k], 2)
-            length += 5
+            length += 5 
             if packagefollows == 0:
                 break
-        print("   found literal length", length)
     else:
         lengthtype = int(strval[6], 2)
-        # print(" lengthtype:", lengthtype)
         if lengthtype == 0:
             overhead = 22
             totallength = int(strval[7:22], 2)
-            length += 22 + totallength
-            print("   found operator type 0 length", length)
+            length += 16 + totallength # 1 bit length indicator, 15 length, rest is content
         else:
             overhead = 18
             nrpacks = int(strval[7:18], 2)
             k = 18
+            length += 12 # overhead for current package: 1 bit length indicator, 11 bit packet count
             for n in range(nrpacks):
-                substr = strval[k:]
-                sublength, overhead = getPacketLength(substr)
-                length +=  sublength + overhead
-            print("   found operator type 1 length", length)
+                sublength, _ = getPacketLength(strval[k:])
+                length += sublength 
+                k += sublength 
     return length, overhead
         
 def decodePacket(strval):
     global versionsum
-    print(f"Decoding {strval}")
+    printIfVerbose(f"Decoding {strval}")
+        
     version = int(strval[:3], 2)
-    print(" version:", version)
     versionsum += version
     typeid  = int(strval[3:6], 2)
-    print(" typeid:", typeid)
+    printIfVerbose(f" version: {version}")
+    printIfVerbose(f" typeid: {typeid}")
     if typeid == 4:
         literal = ''
         for k in range(6, len(strval), 5):
@@ -82,80 +97,61 @@ def decodePacket(strval):
             if packagefollows == 0:
                 break
         literal= int(literal, 2)
-        print(" literal:", literal)
+        printIfVerbose(f" literal: {literal}")
+        return literal
     else: # we've got an operator
+        operands = []
         lengthtype = int(strval[6], 2)
-        print(" lengthtype:", lengthtype)
+        printIfVerbose(f" lengthtype: {lengthtype}")
         
         if lengthtype == 0:
             totallength = int(strval[7:22], 2)
-            print(" totallength:", totallength)
             k = 22
             while k < 22 + totallength:
-                print(f" strval: {strval}")
-                print(f" looking up {strval[k:]}")
-                length, overhead = getPacketLength(strval[k:])
+                assert(k < len(strval))
+                printIfVerbose(f" totallength: {totallength}, k: {k}")
+                printIfVerbose(f" looking up {strval[k:]}")
+                length, _ = getPacketLength(strval[k:k+totallength])
+                printIfVerbose(f" length: {length}, subpack: {strval[k:k+length]}")
                 subpack = strval[k:k+length]
-                print(f"decoding subpacket length {length}: {subpack}")
-                decodePacket(subpack)
+                op = decodePacket(subpack)
+                if op != -1:
+                    operands.append(op)
                 k += length
-        #     k = 20
-        #     while k-19 < totallength:
-        #         packagefollows = 1
-        #         endidx = k+6
-        #         while packagefollows:
-        #             packagefollows = int(strval[endidx], 2)
-        #             endidx += 5
-        #         subpack = strval[k:endidx]
-        #         print("decoding subpacket:", subpack)
-        #         decodePacket(subpack)
-        #         k = endidx 
                 
         else:
             nrpacks = int(strval[7:18], 2)
-            print(" nrpacks:", nrpacks)
             k = 18
             for n in range(nrpacks):
-                print(f"get subpacket length for {strval[k:]}")
+                printIfVerbose(f"get subpacket length for {strval[k:]}, nrpacks: {nrpacks}")
                 length, overhead = getPacketLength(strval[k:])
-                subpack = strval[k:k+length]
-                print(f"decoding subpacket length {length}: {subpack}")
-                decodePacket(subpack)
+                printIfVerbose(f" length: {length}, overhead: {overhead},subpack = strval[{k}:{k+length}], len(strval): {len(strval)}")
+                subpack = strval[k:k+length+overhead]
+                op = decodePacket(subpack)
+                if op != -1:
+                    operands.append(op)
                 k += length
                 
-            # k = 18
-            # for n in range(nrpacks):
-            #     subpacktype = int(strval[k+3:k+6], 2)
-            #     print(" subpacktype:", subpacktype)
-            #     if subpacktype == 4: # subpack is literal
-            #         packagefollows = 1
-            #         endidx = k+6
-            #         while packagefollows:
-            #             packagefollows = int(strval[endidx], 2)
-            #             endidx += 5 
-            #         subpack = strval[k:endidx]
-            #     else: # subpack is operator package
-            #         suboptype = int(strval[k+6], 2)
-            #         print(" suboptype:", suboptype)
-            #         if suboptype == 0:
-            #             suboplength = int(strval[k+7:k+22])
-            #             subpack = strval[k:k+22+suboplength]
-            #         else:
-            #             suboppacknr = int(strval[k+7:k+18])
-            #             packagefollows = 1
-            #             endidx = k+18
-            #             while packagefollows:
-            #                 packagefollows = int(strval[endidx], 2)
-            #                 endidx += 5 
-            #             suboplength = suboppacknr * (endidx - (k+18))
-            #             subpack = strval[k:k+18+suboplength]
-                            
-                    
-                # print(f"decoding subpacket: {subpack}")
-                # decodePacket(subpack)
-                # k = endidx
+        printIfVerbose(f"Operands: {operands}")
         
-decodePacket(strval)
+        if typeid == 0:
+            return sum(operands)
+        elif typeid == 1:
+            return np.product(operands)
+        elif typeid == 2:
+            return np.min(operands)
+        elif typeid == 3:
+            return np.max(operands)
+        elif typeid == 5:
+            return int(operands[0] > operands[1])
+        elif typeid == 6:
+            return int(operands[0] < operands[1])
+        elif typeid == 7:
+            return int(operands[0] == operands[1])
+        else:    
+            return -1
 
-print(f"Task 1: Sum of versions is {versionsum}")
+result = decodePacket(strval)
 
+print(f"\nTask 1: Sum of versions is {versionsum}")
+print(f"Task 2: Result is {result}")
