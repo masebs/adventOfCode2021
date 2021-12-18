@@ -7,8 +7,6 @@ Advent of Code 2021
 
 from json import loads
 
-### Test data
-
 with open("input-day18", 'r') as f:
 # with open("input-day18-test1", 'r') as f:
 # with open("input-day18-test2", 'r') as f:
