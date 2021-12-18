@@ -19,59 +19,52 @@ nbrs = [loads(l.split()[0]) for l in lines]
 def explode(nr): # the explode mechanism by string replacement
     strnr = str(nr).replace(' ', '')
     bracketstack = []
-    allstack     = []
     toBeExploded = []
     changed = False
     for k, c in enumerate(strnr):
-        allstack.append((c, k))
         if c == '[':
             bracketstack.append(c)
-            if len(bracketstack) == 5:
+            if len(bracketstack) == 5: # this is below the allowed depth
                 substr = ''
                 j = k+1
                 sc = strnr[j]
-                while sc != ']':
+                while sc != ']': # find the interior of the too-low node (these are the values to be added to the neighbors)
                     substr += sc
                     j += 1
                     sc = strnr[j]
-                # print("substr", substr)
                 toBeExploded = substr.split(',')
                 # print ("toBeExploded", toBeExploded, j)
                 
-                newstr = strnr[:k] + '0' + strnr[j+1:]
+                strnr = strnr[:k] + '0' + strnr[j+1:] # omit the too-low node and replace by 0
                 
                 i = k-1
-                sc = newstr[i]
-                while sc in '[],' and 0 < i: # find last number
+                sc = strnr[i]
+                while sc in '[],' and 0 < i: # find previous number
                     i -= 1
-                    sc = newstr[i]
+                    sc = strnr[i]
                 replaceEnd = i+1
-                while sc in '0123456789' and 0 < i:
+                while sc in '0123456789' and 0 < i: # we can have multi-digit numbers, so read backwards until end of number
                     i -= 1
-                    sc = newstr[i]
+                    sc = strnr[i]
                 replaceStart = i+1
                 if 0 < i:
-                    # print("last: rs, re: ", replaceStart, replaceEnd, newstr[:replaceStart], str(int(toBeExploded[0])+int(newstr[replaceStart:replaceEnd])), newstr[replaceEnd:])
-                    # print(f"Replacing {newstr[replaceStart:replaceEnd]} by {str(int(toBeExploded[0])+int(newstr[replaceStart:replaceEnd]))}")
-                    newstr = newstr[:replaceStart] + str(int(toBeExploded[0])+int(newstr[replaceStart:replaceEnd])) + newstr[replaceEnd:]
+                    # print(f"Replacing {strnr[replaceStart:replaceEnd]} by {str(int(toBeExploded[0])+int(strnr[replaceStart:replaceEnd]))}")
+                    strnr = strnr[:replaceStart] + str(int(toBeExploded[0])+int(strnr[replaceStart:replaceEnd])) + strnr[replaceEnd:]
                     
                 i = k+2
-                sc = newstr[i]
-                while sc in '[],' and i < len(newstr)-1: # find next number
+                sc = strnr[i]
+                while sc in '[],' and i < len(strnr)-1: # find next number
                     i += 1
-                    sc = newstr[i]
+                    sc = strnr[i]
                 replaceStart = i
-                while sc in '0123456789' and i < len(newstr)-1:
+                while sc in '0123456789' and i < len(strnr)-1: # we can have multi-digit numbers, so read forward until end of number
                     i += 1
-                    sc = newstr[i]
+                    sc = strnr[i]
                 replaceEnd = i
-                if i < len(newstr)-1:
-                    # print("next: rs, re: ", replaceStart, replaceEnd, newstr[:replaceStart], str(int(toBeExploded[1])+int(newstr[replaceStart:replaceEnd])), newstr[replaceEnd:])
-                    # print(f"Replacing {newstr[replaceStart:replaceEnd]} by {str(int(toBeExploded[1])+int(newstr[replaceStart:replaceEnd]))}")
-                    newstr = newstr[:replaceStart] + str(int(toBeExploded[1])+int(newstr[replaceStart:replaceEnd])) + newstr[replaceEnd:]
+                if i < len(strnr)-1:
+                    # print(f"Replacing {strnr[replaceStart:replaceEnd]} by {str(int(toBeExploded[1])+int(strnr[replaceStart:replaceEnd]))}")
+                    strnr = strnr[:replaceStart] + str(int(toBeExploded[1])+int(strnr[replaceStart:replaceEnd])) + strnr[replaceEnd:]
                     
-                strnr = newstr
-                # print("  exploded:", strnr)
                 changed = True
                 break
             
@@ -100,11 +93,10 @@ def split(nr): # split mechanism by string replacement
     return loads(strnr), changed
 
 def reduce(nr): # reduce -> explode and split until nothing changes any more
-    changed = True
-    while changed:
-        nr, changed = explode(nr)
-        nr, changed = split(nr)
-        # print(nr)
+    exchanged, splitchanged = True, True
+    while exchanged or splitchanged:
+        nr, exchanged = explode(nr)
+        nr, splitchanged = split(nr)
     return nr
     
 def add(left, right): 
@@ -126,13 +118,10 @@ def magnitude(nr): # obtain magnitude by building a tree and doing post-order tr
         if preread > 0:
             preread -= 1
             continue
-        # print("Stack: ", stack)
         if c == '[':
-            # print("go left")
             tree.left = Node()
-            old = tree
+            tree.left.parent = tree
             tree = tree.left
-            tree.parent = old
         elif c in '0123456789':
             j = k
             n = strnr[j]
@@ -141,16 +130,12 @@ def magnitude(nr): # obtain magnitude by building a tree and doing post-order tr
                 n = strnr[j]
             tree.value = int(strnr[k:j])
             preread = j-k-1
-            # print("leaf: value", tree.value)
         elif c == ',':
-            # print("go to right brother")
             tree = tree.parent
             tree.right = Node()
-            old = tree
+            tree.right.parent = tree
             tree = tree.right
-            tree.parent = old
         elif c == ']':
-            # print("go up")
             tree = tree.parent
     return postorder(tree)
             
@@ -159,16 +144,14 @@ def postorder(tree):
         return tree.value
     else:
         return 3*postorder(tree.left) + 2*postorder(tree.right)
-    
+
             
 res = nbrs[0]
 
 for n in nbrs[1:]:
-    add1 = res
-    # print("add1:", add1)
-    add2 = n
+    # print("add1:", res)
     # print("add2:", add2)
-    added = add(add1, add2)
+    added = add(res, n)
     # print("added:", str(added).replace(' ', ''))
     res = reduce(added)
     # print("res:", str(res).replace(' ', ''))
@@ -182,7 +165,6 @@ perm = [p for p in perm if p[0] != p[1]]
 maxmag = 0
 
 for p in perm:
-    # print(p)
     mag = magnitude(reduce(add(nbrs[p[0]], nbrs[p[1]])))
     if mag > maxmag:
         maxmag = mag
