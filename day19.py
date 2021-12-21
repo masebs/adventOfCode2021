@@ -7,8 +7,8 @@ Advent of Code 2021
 
 from itertools import permutations
 
-with open("input-day19", 'r') as f:
-# with open("input-day19-test", 'r') as f:
+# with open("input-day19", 'r') as f:
+with open("input-day19-test", 'r') as f:
     lines = f.readlines()
 
 scanners = []
@@ -27,8 +27,7 @@ def getRotations(pts): # get all 24 allowed rotations
     transforms = [m for n in 
                  [list(permutations(comb)) for comb in 
                  [(i,j,k) for i in [-1,1] for j in [-2,2] for k in [-3,3]]] 
-                 for m in n]  # all system (including left-hand systems)
-                 #for m in n if m[0]*m[1]*m[2] > 0] # 24, only right-hand systems
+                 for m in n] # 49, all systems including left-hand systems; right-handed would probably suffice!
     rots = [doTransform(pts, trafo) for trafo in transforms]
     return rots, transforms
 
@@ -48,7 +47,7 @@ for s in range(len(scanners)):
 
 for i in range(len(scanners)):
     for j in range(len(scanners)):
-        if i == j: #or j in transformedTo.keys():
+        if i == j: # for j in transformedTo.keys():
             continue
         s1 = scanners[i]
         s2Rots, trafo = getRotations(scanners[j])
