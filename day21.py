@@ -55,47 +55,41 @@ p1Winning, score1, score2, rolledcount = play(100, 1000, (p1start, p2start))
 
 print(f"\nPlayer {1 if p1Winning else 0} wins after {rolledcount} rolls, losing player has {score2 if p1Winning else score1} points,\
  result is {(score2 if p1Winning else score1)*rolledcount}\n")
- 
-dicevals = [(i,j, k) for i in [1,2,3] for j in [1,2,3] for k in [1,2,3]]
-dicerolls = [(i,j) for i in dicevals for j in dicevals]
-trackpos = [(i,j) for i in range(10) for j in range(10)]
 
-# if we roll these dicevals at track positions tracks, we will end on tracks playSequence(dicevals, tracks)
-def playSequence(dicevals, tracks): 
-    tracks = ( (tracks[0] + sum(dicevals[0])) % 10, (tracks[1] + sum(dicevals[1])) % 10 )
-    return tracks # score
+perms = list(range(3,10))
+multipliers = {3: 1, 4: 3, 5: 6, 6: 7, 7: 6, 8: 3, 9: 1}
+targetscore = 21
 
-seqs = {}
-for tp in trackpos:
-    for dr in dicerolls:
-        seqs[(tp, dr)] = playSequence(dr, tp)
- 
-def playRec(targetpoints, scores, tpcounts, reclvl):
-    
-    if scores[0] >= targetpoints:
-        return (1, 0)
-    elif scores[1] >= targetpoints:
-        return (0, 1)
-    
-    # do recursively until at bottom end of recursion target score is hit
-    for tk in tpcounts.keys(): # e.g. pos 1x1, 5x2, 0x3, ...
-        for dr in dicerolls:
-            # recwins = playRec(targetpoints, scores, tk, reclvl+1)
-            newtp = seqs[(tk, dr)]
-            scores = (newtp[0]+1, newtp[1]+1)
-            tpcounts[newtp] += 1
-            wins = playRec(targetpoints, scores, tpcounts, reclvl+1)
-        tpcounts[tk] -= 1
-    
-    if reclvl <= 3:
-        print(f"on reclvl {reclvl}, score {scores}: {tpcounts}") 
+cache = {}
+cachehit = 0
+cachemiss = 0
+
+def playRec(startvals, startscores, p1turn):
+    global cachemiss, cachehit
+    wins = [0,0]
+    vals = startvals.copy()
+    scores = startscores.copy()
+    i = 0 if p1turn else 1  # for some reason it won't work to simulate both players at once, so iterate between them
+    for p in perms:
+        vals[i] = (startvals[i] + p) % 10
+        scores[i] = startscores[i] + vals[i]+1
         
-    return tpcounts
+        if scores[i] >= targetscore:
+            wins[i] += 1 * multipliers[p]
+        else:
+            if (tuple(vals), tuple(scores), p1turn) not in cache:
+                cachemiss += 1
+                w = playRec(vals[:], scores[:], not p1turn)
+                cache[(tuple(vals), tuple(scores), p1turn)] = w
+            else:
+                cachehit += 1
+                w = cache[(tuple(vals), tuple(scores), p1turn)]
+            wins[0] += w[0] * multipliers[p]
+            wins[1] += w[1] * multipliers[p]
+                
+    return wins
 
-    
-tpcounts = {}
-tpcounts[(p1start, p2start)] = 1
-    
-wins = playRec(21, (0, 0), tpcounts, 0)
- 
- 
+wins = playRec([p1start-1, p2start-1], [0,0], True)
+
+print(f"Task 2: Number of wins: {wins}")
+
