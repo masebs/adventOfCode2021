@@ -45,8 +45,10 @@ print(f"\nTask 1: Number of cubes is {ncubes}\n")
 #           Then, for "on" cubes, insert the new cube into the free space. For "off" cubes, do nothing more, their
 #           space has been cleared. There are no intersections or containments in the cube array at any time, 
 #           so the volume can be calculated at any time by adding the volumes of all cubes.
-#           Using the principle of inclusion and exclusion won't really work because each cube is intersecting many
-#           other cubes, and n! intersections need to be calculated if n is the number of intersecting cubes
+#           Using the principle of inclusion and exclusion would also work if the cubes are propely united at the 
+#           insertion. Adding them as they are causes inclusion and exclusion to run for an eternity because each 
+#           cube is intersecting with many other cubes, and n! intersections need to be calculated if n is the number 
+#           of intersecting cubes
     
 def isContiguous(int1, int2):
     s = sorted([int1, int2], key = lambda i: i[0])
